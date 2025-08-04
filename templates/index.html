@@ -1,0 +1,566 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>QuickRead - Text Summarization</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body class="bg-gray-50 min-h-screen">
+    <div class="container mx-auto px-4 py-8 max-w-6xl">
+
+        <div class="text-center mb-8">
+            <h1 class="text-4xl font-bold text-gray-800 mb-2">
+                <i class="fas fa-book-reader text-blue-600 mr-3"></i>QuickRead
+            </h1>
+            <p class="text-gray-600">Intelligent text summarization powered by advanced algorithms</p>
+        </div>
+
+
+        <div class="flex justify-center mb-8">
+            <div class="bg-white rounded-lg shadow-sm p-1 inline-flex">
+                <button id="text-tab" class="px-6 py-2 rounded-md font-medium transition-all duration-200 bg-blue-600 text-white">
+                    <i class="fas fa-keyboard mr-2"></i>Summarize Text
+                </button>
+                <button id="document-tab" class="px-6 py-2 rounded-md font-medium text-gray-600 hover:text-gray-800 transition-all duration-200">
+                    <i class="fas fa-file-upload mr-2"></i>Summarize Document
+                </button>
+            </div>
+        </div>
+
+
+        <div id="text-content" class="tab-content">
+            <div class="grid lg:grid-cols-2 gap-8">
+
+                <div class="bg-white rounded-lg shadow-lg p-6">
+                    <h2 class="text-xl font-semibold text-gray-800 mb-4">
+                        <i class="fas fa-edit text-blue-600 mr-2"></i>Input Text
+                    </h2>
+                    <textarea 
+                        id="input-text" 
+                        placeholder="Paste your text here to summarize..." 
+                        class="w-full h-64 p-4 border border-gray-300 rounded-lg resize-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    ></textarea>
+                    
+
+                    <div class="mt-4 space-y-4">
+
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Summarization Style</label>
+                            <select id="summary-style" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                                <option value="smart">Smart Summary - Key sentence selection</option>
+                                <option value="bullet">Bullet Points - Main highlights</option>
+                                <option value="detailed">Detailed Summary - Structured overview</option>
+                                <option value="quick">Quick Summary - Essential facts</option>
+                            </select>
+                        </div>
+                        
+
+                        <div id="length-control">
+                            <label class="block text-sm font-medium text-gray-700 mb-2">
+                                Summary Length: <span id="length-value">30%</span>
+                            </label>
+                            <input 
+                                type="range" 
+                                id="summary-length" 
+                                min="10" 
+                                max="50" 
+                                value="30" 
+                                class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer slider"
+                            >
+                            <div class="flex justify-between text-xs text-gray-500 mt-1">
+                                <span>10%</span>
+                                <span>30%</span>
+                                <span>50%</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <button 
+                        id="summarize-btn" 
+                        class="w-full mt-6 bg-blue-600 hover:bg-blue-700 text-white font-medium py-3 px-6 rounded-lg transition-colors duration-200 flex items-center justify-center"
+                    >
+                        <i class="fas fa-magic mr-2"></i>Generate Summary
+                    </button>
+                </div>
+
+                <!-- Output Section -->
+                <div class="bg-white rounded-lg shadow-lg p-6">
+                    <div class="flex justify-between items-center mb-4">
+                        <h2 class="text-xl font-semibold text-gray-800">
+                            <i class="fas fa-file-text text-green-600 mr-2"></i>Summary
+                        </h2>
+                        <button 
+                            id="copy-btn" 
+                            class="px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg transition-colors duration-200 flex items-center text-sm"
+                            style="display: none;"
+                        >
+                            <i class="fas fa-copy mr-2"></i>Copy
+                        </button>
+                    </div>
+                    
+                    <div id="summary-output" class="min-h-64 p-4 bg-gray-50 rounded-lg border border-gray-200">
+                        <div class="flex items-center justify-center h-full text-gray-500">
+                            <div class="text-center">
+                                <i class="fas fa-file-text text-4xl mb-3"></i>
+                                <p>Your summary will appear here</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+
+        <div id="document-content" class="tab-content hidden">
+            <div class="grid lg:grid-cols-2 gap-8">
+                <!-- Upload Section -->
+                <div class="bg-white rounded-lg shadow-lg p-6">
+                    <h2 class="text-xl font-semibold text-gray-800 mb-4">
+                        <i class="fas fa-cloud-upload-alt text-blue-600 mr-2"></i>Upload Document
+                    </h2>
+                    
+
+                    <div 
+                        id="upload-area" 
+                        class="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center hover:border-blue-400 transition-colors duration-200 cursor-pointer"
+                    >
+                        <i class="fas fa-file-upload text-4xl text-gray-400 mb-4"></i>
+                        <p class="text-gray-600 mb-2">Drop your file here or click to browse</p>
+                        <p class="text-sm text-gray-500">Supports PDF and DOCX files (max 16MB)</p>
+                        <input type="file" id="file-input" accept=".pdf,.docx" class="hidden">
+                    </div>
+                    
+
+                    <div id="file-info" class="mt-4 hidden">
+                        <div class="flex items-center p-3 bg-blue-50 rounded-lg">
+                            <i class="fas fa-file text-blue-600 mr-3"></i>
+                            <div class="flex-1">
+                                <p id="file-name" class="font-medium text-gray-800"></p>
+                                <p id="file-size" class="text-sm text-gray-600"></p>
+                            </div>
+                            <button id="remove-file" class="text-red-500 hover:text-red-700">
+                                <i class="fas fa-times"></i>
+                            </button>
+                        </div>
+                    </div>
+                    
+
+                    <div class="mt-6 space-y-4">
+
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Summarization Style</label>
+                            <select id="doc-summary-style" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                                <option value="smart">Smart Summary - Key sentence selection</option>
+                                <option value="bullet">Bullet Points - Main highlights</option>
+                                <option value="detailed">Detailed Summary - Structured overview</option>
+                                <option value="quick">Quick Summary - Essential facts</option>
+                            </select>
+                        </div>
+                        
+
+                        <div id="doc-length-control">
+                            <label class="block text-sm font-medium text-gray-700 mb-2">
+                                Summary Length: <span id="doc-length-value">30%</span>
+                            </label>
+                            <input 
+                                type="range" 
+                                id="doc-summary-length" 
+                                min="10" 
+                                max="50" 
+                                value="30" 
+                                class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer slider"
+                            >
+                            <div class="flex justify-between text-xs text-gray-500 mt-1">
+                                <span>10%</span>
+                                <span>30%</span>
+                                <span>50%</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <button 
+                        id="process-doc-btn" 
+                        class="w-full mt-6 bg-blue-600 hover:bg-blue-700 text-white font-medium py-3 px-6 rounded-lg transition-colors duration-200 flex items-center justify-center disabled:bg-gray-400"
+                        disabled
+                    >
+                        <i class="fas fa-cogs mr-2"></i>Process Document
+                    </button>
+                </div>
+
+                <!-- Document Output Section -->
+                <div class="bg-white rounded-lg shadow-lg p-6">
+                    <div class="flex justify-between items-center mb-4">
+                        <h2 class="text-xl font-semibold text-gray-800">
+                            <i class="fas fa-file-text text-green-600 mr-2"></i>Document Summary
+                        </h2>
+                        <button 
+                            id="copy-doc-btn" 
+                            class="px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg transition-colors duration-200 flex items-center text-sm"
+                            style="display: none;"
+                        >
+                            <i class="fas fa-copy mr-2"></i>Copy
+                        </button>
+                    </div>
+                    
+                    <div id="doc-summary-output" class="min-h-64 p-4 bg-gray-50 rounded-lg border border-gray-200">
+                        <div class="flex items-center justify-center h-full text-gray-500">
+                            <div class="text-center">
+                                <i class="fas fa-file-text text-4xl mb-3"></i>
+                                <p>Upload a document to see its summary</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+
+        <div id="loading" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center hidden z-50">
+            <div class="bg-white rounded-lg p-6 flex items-center">
+                <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mr-4"></div>
+                <span class="text-gray-700">Processing...</span>
+            </div>
+        </div>
+
+
+        <div id="error-alert" class="fixed top-4 right-4 bg-red-500 text-white px-6 py-4 rounded-lg shadow-lg hidden z-50">
+            <div class="flex items-center">
+                <i class="fas fa-exclamation-triangle mr-3"></i>
+                <span id="error-message"></span>
+                <button id="close-error" class="ml-4 text-white hover:text-gray-200">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+        </div>
+
+
+        <div id="success-alert" class="fixed top-4 right-4 bg-green-500 text-white px-6 py-4 rounded-lg shadow-lg hidden z-50">
+            <div class="flex items-center">
+                <i class="fas fa-check-circle mr-3"></i>
+                <span id="success-message"></span>
+                <button id="close-success" class="ml-4 text-white hover:text-gray-200">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Tab switching functionality
+        const textTab = document.getElementById('text-tab');
+        const documentTab = document.getElementById('document-tab');
+        const textContent = document.getElementById('text-content');
+        const documentContent = document.getElementById('document-content');
+
+        textTab.addEventListener('click', () => {
+            textTab.classList.add('bg-blue-600', 'text-white');
+            textTab.classList.remove('text-gray-600');
+            documentTab.classList.remove('bg-blue-600', 'text-white');
+            documentTab.classList.add('text-gray-600');
+            textContent.classList.remove('hidden');
+            documentContent.classList.add('hidden');
+        });
+
+        documentTab.addEventListener('click', () => {
+            documentTab.classList.add('bg-blue-600', 'text-white');
+            documentTab.classList.remove('text-gray-600');
+            textTab.classList.remove('bg-blue-600', 'text-white');
+            textTab.classList.add('text-gray-600');
+            documentContent.classList.remove('hidden');
+            textContent.classList.add('hidden');
+        });
+
+        // Summary length slider updates
+        const summaryLength = document.getElementById('summary-length');
+        const lengthValue = document.getElementById('length-value');
+        const lengthControl = document.getElementById('length-control');
+        const summaryStyle = document.getElementById('summary-style');
+
+        const docSummaryLength = document.getElementById('doc-summary-length');
+        const docLengthValue = document.getElementById('doc-length-value');
+        const docLengthControl = document.getElementById('doc-length-control');
+        const docSummaryStyle = document.getElementById('doc-summary-style');
+
+        summaryLength.addEventListener('input', (e) => {
+            lengthValue.textContent = e.target.value + '%';
+        });
+
+        docSummaryLength.addEventListener('input', (e) => {
+            docLengthValue.textContent = e.target.value + '%';
+        });
+
+        // Hide/show length control for key points style
+        summaryStyle.addEventListener('change', (e) => {
+            if (e.target.value === 'bullet') {
+                lengthControl.style.display = 'none';
+            } else {
+                lengthControl.style.display = 'block';
+            }
+        });
+
+        docSummaryStyle.addEventListener('change', (e) => {
+            if (e.target.value === 'bullet') {
+                docLengthControl.style.display = 'none';
+            } else {
+                docLengthControl.style.display = 'block';
+            }
+        });
+
+        // File upload functionality
+        const uploadArea = document.getElementById('upload-area');
+        const fileInput = document.getElementById('file-input');
+        const fileInfo = document.getElementById('file-info');
+        const fileName = document.getElementById('file-name');
+        const fileSize = document.getElementById('file-size');
+        const removeFile = document.getElementById('remove-file');
+        const processDocBtn = document.getElementById('process-doc-btn');
+
+        let selectedFile = null;
+
+        uploadArea.addEventListener('click', () => fileInput.click());
+        uploadArea.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            uploadArea.classList.add('border-blue-400');
+        });
+        uploadArea.addEventListener('dragleave', () => {
+            uploadArea.classList.remove('border-blue-400');
+        });
+        uploadArea.addEventListener('drop', (e) => {
+            e.preventDefault();
+            uploadArea.classList.remove('border-blue-400');
+            const files = e.dataTransfer.files;
+            if (files.length > 0) {
+                handleFileSelect(files[0]);
+            }
+        });
+
+        fileInput.addEventListener('change', (e) => {
+            if (e.target.files.length > 0) {
+                handleFileSelect(e.target.files[0]);
+            }
+        });
+
+        removeFile.addEventListener('click', () => {
+            selectedFile = null;
+            fileInput.value = '';
+            fileInfo.classList.add('hidden');
+            processDocBtn.disabled = true;
+        });
+
+        function handleFileSelect(file) {
+            const allowedTypes = ['application/pdf', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'];
+            
+            if (!allowedTypes.includes(file.type)) {
+                showError('Please select a PDF or DOCX file.');
+                return;
+            }
+            
+            if (file.size > 16 * 1024 * 1024) {
+                showError('File size must be less than 16MB.');
+                return;
+            }
+            
+            selectedFile = file;
+            fileName.textContent = file.name;
+            fileSize.textContent = formatFileSize(file.size);
+            fileInfo.classList.remove('hidden');
+            processDocBtn.disabled = false;
+        }
+
+        function formatFileSize(bytes) {
+            if (bytes === 0) return '0 Bytes';
+            const k = 1024;
+            const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+        }
+
+        // Text summarization
+        const inputText = document.getElementById('input-text');
+        const summarizeBtn = document.getElementById('summarize-btn');
+        const summaryOutput = document.getElementById('summary-output');
+        const copyBtn = document.getElementById('copy-btn');
+
+        summarizeBtn.addEventListener('click', async () => {
+            const text = inputText.value.trim();
+            
+            if (!text) {
+                showError('Please enter some text to summarize.');
+                return;
+            }
+            
+            if (text.length < 50) {
+                showError('Text is too short for summarization. Please provide at least 50 characters.');
+                return;
+            }
+            
+            const style = summaryStyle.value;
+            const percentage = summaryLength.value;
+            
+            showLoading();
+            
+            try {
+                const response = await fetch('/summarize', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        text: text,
+                        style: style,
+                        percentage: parseInt(percentage)
+                    })
+                });
+                
+                const data = await response.json();
+                hideLoading();
+                
+                if (response.ok) {
+                    displaySummary(data.summary, summaryOutput, copyBtn);
+                } else {
+                    showError(data.error || 'An error occurred while processing your request.');
+                }
+            } catch (error) {
+                hideLoading();
+                showError('Network error. Please try again.');
+            }
+        });
+
+        // Document processing
+        processDocBtn.addEventListener('click', async () => {
+            if (!selectedFile) {
+                showError('Please select a file first.');
+                return;
+            }
+            
+            showLoading();
+            
+            try {
+                // First upload and extract text
+                const formData = new FormData();
+                formData.append('file', selectedFile);
+                
+                const uploadResponse = await fetch('/upload', {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                const uploadData = await uploadResponse.json();
+                
+                if (!uploadResponse.ok) {
+                    hideLoading();
+                    showError(uploadData.error || 'Error processing file.');
+                    return;
+                }
+                
+                // Then summarize the extracted text
+                const style = docSummaryStyle.value;
+                const percentage = docSummaryLength.value;
+                
+                const summaryResponse = await fetch('/summarize', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        text: uploadData.text,
+                        style: style,
+                        percentage: parseInt(percentage)
+                    })
+                });
+                
+                const summaryData = await summaryResponse.json();
+                hideLoading();
+                
+                if (summaryResponse.ok) {
+                    displaySummary(summaryData.summary, document.getElementById('doc-summary-output'), document.getElementById('copy-doc-btn'));
+                } else {
+                    showError(summaryData.error || 'Error generating summary.');
+                }
+            } catch (error) {
+                hideLoading();
+                showError('Network error. Please try again.');
+            }
+        });
+
+        // Copy functionality
+        copyBtn.addEventListener('click', () => copyToClipboard(summaryOutput.textContent));
+        document.getElementById('copy-doc-btn').addEventListener('click', () => 
+            copyToClipboard(document.getElementById('doc-summary-output').textContent)
+        );
+
+        function displaySummary(summary, outputElement, copyButton) {
+            outputElement.innerHTML = `<pre class="whitespace-pre-wrap font-sans text-gray-800">${summary}</pre>`;
+            copyButton.style.display = 'flex';
+        }
+
+        function copyToClipboard(text) {
+            navigator.clipboard.writeText(text).then(() => {
+                showSuccess('Summary copied to clipboard!');
+            }).catch(() => {
+                showError('Failed to copy to clipboard.');
+            });
+        }
+
+        // Utility functions
+        function showLoading() {
+            document.getElementById('loading').classList.remove('hidden');
+        }
+
+        function hideLoading() {
+            document.getElementById('loading').classList.add('hidden');
+        }
+
+        function showError(message) {
+            const errorAlert = document.getElementById('error-alert');
+            const errorMessage = document.getElementById('error-message');
+            errorMessage.textContent = message;
+            errorAlert.classList.remove('hidden');
+            setTimeout(() => {
+                errorAlert.classList.add('hidden');
+            }, 5000);
+        }
+
+        function showSuccess(message) {
+            const successAlert = document.getElementById('success-alert');
+            const successMessage = document.getElementById('success-message');
+            successMessage.textContent = message;
+            successAlert.classList.remove('hidden');
+            setTimeout(() => {
+                successAlert.classList.add('hidden');
+            }, 3000);
+        }
+
+        // Close alert buttons
+        document.getElementById('close-error').addEventListener('click', () => {
+            document.getElementById('error-alert').classList.add('hidden');
+        });
+
+        document.getElementById('close-success').addEventListener('click', () => {
+            document.getElementById('success-alert').classList.add('hidden');
+        });
+    </script>
+
+    <style>
+        .slider::-webkit-slider-thumb {
+            appearance: none;
+            height: 20px;
+            width: 20px;
+            border-radius: 50%;
+            background: #2563eb;
+            cursor: pointer;
+        }
+
+        .slider::-moz-range-thumb {
+            height: 20px;
+            width: 20px;
+            border-radius: 50%;
+            background: #2563eb;
+            cursor: pointer;
+            border: none;
+        }
+    </style>
+</body>
+</html>
